@@ -52,7 +52,9 @@ app.use("/api/posts", postsRoutes);
 const Message = require("./models/Message");
 
 const users = {};
-
+app.get("/", (req, res) => {
+    res.send("Zcoder API Running");
+});
 io.on("connection", (socket) => {
     // console.log("User connected:", socket.id);
     socket.on("register", (userId) => {
