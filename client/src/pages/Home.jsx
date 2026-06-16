@@ -20,10 +20,16 @@ function Home() {
 
             // Contests
             const res2 = await fetch(`${API_URL}/api/contests`);
-            const contestData = await res2.json();
 
             const now = Date.now();
             const next24h = now + 24 * 60 * 60 * 1000;
+            const contestData = await res2.json();
+
+            if (!Array.isArray(contestData)) {
+                console.error("Contest API returned:", contestData);
+                setContests([]);
+                return;
+            }
 
             const filtered = contestData.filter(c => {
                 const start = new Date(c.start).getTime();
@@ -88,7 +94,7 @@ function Home() {
                             borderRadius: "8px",
                             background: "#fff"
                         }}
-                  >
+                    >
                         <h3
                             style={{
                                 fontSize: "22px",
@@ -121,7 +127,14 @@ function Home() {
                 <h2 style={{ marginTop: "30px" }}>Upcoming (Next 24h)</h2>
 
                 {contests.length === 0 ? (
-                    <p>No contests in next 24 hours</p>
+                    <p>🔥 No contests in next 24 hours
+                        <br />
+                        Check the Contests page for upcoming events.
+                        <br />
+                        <button onClick={() => navigate("/contests")}>
+                            View All Contests
+                        </button>
+                    </p>
                 ) : (
                     contests.map(c => (
                         <div key={c.id} style={{ marginBottom: "10px" }}>
@@ -129,7 +142,7 @@ function Home() {
                                 <b>{c.event}</b>
                             </a>
                             <div>
-                                {c.resource.name} — {new Date(c.start).toLocaleString()}
+                                {c.resource} — {new Date(c.start).toLocaleString()}
                             </div>
                         </div>
                     ))

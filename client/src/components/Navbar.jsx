@@ -1,6 +1,11 @@
 import { NavLink } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-
+import {
+    FaHome,
+    FaCode,
+    FaTrophy,
+    FaUser
+} from "react-icons/fa";
 function Navbar() {
     const { token } = useAuth();
     const linkStyle = ({ isActive }) => ({
@@ -24,13 +29,13 @@ function Navbar() {
                 }}
             >
                 <NavLink to="/" style={linkStyle}>
-                    Home
+                    <FaHome />  Home
                 </NavLink>
                 <NavLink to="/problems" style={linkStyle}>
-                    Problems
+                    <FaCode /> Problems
                 </NavLink>
                 <NavLink to="/contests" style={linkStyle}>
-                    Contests
+                    <FaTrophy />   Contests
                 </NavLink>
                 {/* <NavLink to="/bookmarks" style={{ marginRight: "15px" }}>
                Bookmarks
@@ -43,7 +48,7 @@ function Navbar() {
                         Sign up/Sign in
                     </NavLink> :
                     <NavLink to="/profile" style={linkStyle}>
-                        Profile
+                        <FaUser />    Profile
                     </NavLink>}
 
             </nav>
