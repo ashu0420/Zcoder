@@ -7,16 +7,20 @@
 // ];
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "./AuthContext";
-
+import { useAuth } from "../context/AuthContext";
+import API_URL from "../config/api";
 function Problems() {
   const [problems, setProblems] = useState([]);
+  const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [fav, setFav] = useState([]);
   const { token } = useAuth();
   const [showLoginMsg, setShowLoginMsg] = useState(false);
   const navigate = useNavigate();
+  const filteredProblems = problems.filter((p) =>
+    p.title.toLowerCase().includes(search.toLowerCase())
+  );
   const addToFav = async (pid) => {
     if (!token) {
       setShowLoginMsg(true);
@@ -26,7 +30,7 @@ function Problems() {
       }, 500);
       return;
     }
-    const res = await fetch(`http://localhost:5000/api/problems/fav/${pid}`,
+    const res = await fetch(`${API_URL}/api/problems/fav/${pid}`,
       {
         method: "POST",
         headers: {
@@ -48,7 +52,7 @@ function Problems() {
   useEffect(() => {
     const fetchProblems = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/problems");
+        const res = await fetch(`${API_URL}/api/problems`);
 
         const data = await res.json();
         if (!res.ok) {
@@ -65,7 +69,7 @@ function Problems() {
 
     const fetchFav = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/problems/fav",
+        const res = await fetch(`${API_URL}/api/problems/fav`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -95,20 +99,73 @@ function Problems() {
   return (
     <>
       <div style={{ padding: "20px" }}>
+        <input
+          type="text"
+          placeholder="Search problems..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          style={{
+            width: "100%",
+            padding: "10px",
+            marginBottom: "20px",
+            borderRadius: "8px",
+            border: "1px solid #ccc"
+          }}
+        />
         <h2>Problems</h2>
 
-        <ul>
-          {problems.map((p) => (
-            <li key={p._id}>
-              <Link to={`/problems/${p.slug}`}>
+        <div>
+          {filteredProblems.map((p) => (
+            <div
+              key={p._id}
+              style={{
+                border: "1px solid #ddd",
+                borderRadius: "8px",
+                padding: "12px 16px",
+                marginBottom: "12px",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center"
+              }}
+            >
+              <Link
+                to={`/problems/${p.slug}`}
+                style={{
+                  textDecoration: "none",
+                  fontWeight: "600",
+                  fontSize: "18px",
+                  color: "#2563eb"
+                }}
+              >
                 {p.title}
               </Link>
-              {" "}— <b>{p.difficulty}</b>
-              {/* if(fav.find(p._id)) */}
-              <button onClick={() => addToFav(p._id)}>{fav.includes(p._id) ? "Remove from favourites" : "Add to Favourites"}</button>
-            </li>
+
+              <span
+                style={{
+                  padding: "4px 10px",
+                  borderRadius: "6px",
+                  fontSize: "14px",
+                  fontWeight: "500",
+                  backgroundColor:
+                    p.difficulty === "Easy"
+                      ? "#dcfce7"
+                      : p.difficulty === "Medium"
+                        ? "#fef3c7"
+                        : "#fee2e2"
+                }}
+              >
+                {p.difficulty}
+              </span>
+              {/* 
+<button onClick={() => addToFav(p._id)}>
+  {fav.includes(p._id)
+    ? "Remove from favourites"
+    : "Add to Favourites"}
+</button>
+*/}
+            </div>
           ))}
-        </ul>
+        </div>
       </div>
       {showLoginMsg && (
         <div className="login-popup">

@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import API_URL from "../config/api";
 
 function Submission() {
     const { submissionId } = useParams();
     const [solution, setSolution] = useState();
     useEffect(() => {
         const fetchSol = async () => {
-            const res = await fetch(`http://localhost:5000/api/submissions/submission/${submissionId}`);
+            const res = await fetch(` ${API_URL}/api/submissions/submission/${submissionId}`);
             if (!res.ok) {
                 const text = await res.text();
                 throw new Error(text);

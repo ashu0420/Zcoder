@@ -1,4 +1,4 @@
-import Navbar from "./pages/Navbar";
+import Navbar from "./components/Navbar";
 import AuthPage from "./pages/Auth";
 import Contests from "./pages/Contests";
 import Problems from "./pages/Problems";
@@ -26,14 +26,14 @@ function App() {
           <Route path="signin" element={<Signin />} />
           <Route path="signup" element={<Signup />} />
         </Route>
-        <Route path="profile" element={<Profile />} />
+        <Route path="/profile" element={<Profile />} />
         <Route path="/problems/:slug" element={<Problem />}>
           <Route index element={<Description />} />
           <Route path="mySubmissions" element={<MySubmissions />} />
           <Route path="allSubmissions" element={<AllSubmissions />} />
           <Route path="discussion" element={<Discussion />} />
         </Route>
-        <Route path="submission/:submissionId" element={<Submission />} />
+        <Route path="/submission/:submissionId" element={<Submission />} />
 
       </Routes>
     </div>

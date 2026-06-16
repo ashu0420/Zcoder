@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useOutletContext, Link } from "react-router-dom";
-
+import API_URL from "../config/api";
 
 function AllSubmissions() {
     const { problem } = useOutletContext();
@@ -16,7 +16,7 @@ function AllSubmissions() {
         const fetchSubmissions = async () => {
             try {
                 const res = await fetch(
-                    `http://localhost:5000/api/submissions/${problemId}`
+                    `${API_URL}/api/submissions/${problemId}`
                 );
 
                 if (!res.ok) {

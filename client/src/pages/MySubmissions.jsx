@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useOutletContext, Link } from "react-router-dom";
-import { useAuth } from "./AuthContext";
-
+import { useAuth } from "../context/AuthContext";
+import API_URL from "../config/api";
 function MySubmissions() {
     const { problem } = useOutletContext();
     const { userId } = useAuth();
@@ -19,7 +19,7 @@ function MySubmissions() {
 
             try {
                 const res = await fetch(
-                    `http://localhost:5000/api/submissions/${problemId}/${userId}`
+                    `${API_URL}/api/submissions/${problemId}/${userId}`
                 );
 
                 if (!res.ok) {

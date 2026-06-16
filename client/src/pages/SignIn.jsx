@@ -1,15 +1,16 @@
 import { useState } from 'react';
-import { useAuth } from "./AuthContext";
+import { useAuth } from "../context/AuthContext";
 import { useNavigate } from 'react-router-dom';
+import API_URL from "../config/api";
 function Signin() {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [message, setMessage] = useState("");
-    const { setToken,setUserId,setUser} = useAuth();
+    const { setToken, setUserId, setUser } = useAuth();
     const navigate = useNavigate();
     const handleSignin = async () => {
         try {
-            const res= await fetch("http://localhost:5000/api/auth/signin", {
+            const res = await fetch(`${API_URL}/api/auth/signin`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -24,9 +25,8 @@ function Signin() {
             })
             const data = await res.json();
             setMessage(data.message || "Signed In");
-            
-            if (!res.ok)
-            {
+
+            if (!res.ok) {
                 return;
             }
             localStorage.setItem("token", data.token);
@@ -41,7 +41,7 @@ function Signin() {
             setMessage("Something is wrong");
         }
         finally {
-            
+
         }
     }
     return <div>

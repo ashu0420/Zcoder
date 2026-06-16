@@ -1,5 +1,5 @@
 
-import { useOutletContext} from "react-router-dom";
+import { useOutletContext } from "react-router-dom";
 
 function Description() {
     const { problem } = useOutletContext();
@@ -7,6 +7,17 @@ function Description() {
     return (
         <div>
             <h2>{problem.title}</h2>
+            <div
+                style={{
+                    display: "inline-block",
+                    padding: "4px 10px",
+                    borderRadius: "6px",
+                    backgroundColor: "#fef3c7",
+                    marginBottom: "12px"
+                }}
+            >
+                {problem.difficulty}
+            </div>
             <p>{problem.description}</p>
 
             <h3>Test cases</h3>
@@ -17,13 +28,30 @@ function Description() {
             <pre>{problem.output}</pre> */}
 
             <ul>
-                {problem.testCases.map((tc, index) => (
-                    <li key={index}>
-                        <b>Input:</b> {tc.input}
-                        <br />
-                        <b>Output:</b> {tc.output}
-                    </li>
-                ))}
+                {
+                    problem.testCases.map((tc, index) => (
+                        <div
+                            key={index}
+                            style={{
+                                border: "1px solid #ddd",
+                                borderRadius: "8px",
+                                padding: "12px",
+                                marginBottom: "12px",
+                                background: "#f9fafb"
+                            }}
+                        >
+                            <div>
+                                <strong>Input:</strong>
+                            </div>
+                            <pre>{tc.input}</pre>
+
+                            <div>
+                                <strong>Output:</strong>
+                            </div>
+                            <pre>{tc.output}</pre>
+                        </div>
+                    ))
+                }
             </ul>
         </div>)
 }

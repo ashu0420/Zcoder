@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-
+import API_URL from "../config/api";
 function Contests() {
   const [contests, setContests] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -7,7 +7,7 @@ function Contests() {
   useEffect(() => {
     const fetchContests = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/contests"); // your backend route
+        const res = await fetch(`${API_URL}api/contests`); // your backend route
         const data = await res.json();
 
         const formatted = data.map(c => ({

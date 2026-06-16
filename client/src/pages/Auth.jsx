@@ -1,5 +1,5 @@
 import { NavLink, Outlet } from "react-router-dom";
-import { useAuth } from "./AuthContext";
+import { useAuth } from "../context/AuthContext";
 
 function AuthPage() {
   const linkStyle = ({ isActive }) => ({
