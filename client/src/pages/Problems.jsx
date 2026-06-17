@@ -10,6 +10,7 @@ function Problems() {
   const [search, setSearch] = useState("");
   const [tags, setTags] = useState([]);
   const [fav, setFav] = useState([]);
+  const [showFavOnly, setShowFavOnly] = useState(false);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -33,7 +34,7 @@ function Problems() {
     fetchTags();
   }, []);
 
-  
+
   useEffect(() => {
     const fetchProblems = async () => {
       try {
@@ -86,7 +87,9 @@ function Problems() {
       fetchFav();
     }
   }, [difficulty, tag, search, token]);
-
+  const displayedProblems = showFavOnly
+    ? problems.filter((p) => fav.includes(p._id))
+    : problems;
   const addToFav = async (pid) => {
     if (!token) {
       setShowLoginMsg(true);
@@ -198,11 +201,33 @@ function Problems() {
           >
             Clear
           </button>
+          <button
+            onClick={() => setShowFavOnly(!showFavOnly)}
+            style={{
+              padding: "10px 16px",
+              borderRadius: "8px",
+              cursor: "pointer",
+              backgroundColor: showFavOnly ? "#facc15" : "#f3f4f6"
+            }}
+          >
+            {showFavOnly ? "⭐ Favorites" : "☆ Favorites"}
+          </button>
+          {/* <select
+            value={showFavOnly ? "fav" : "all"}
+            onChange={(e) =>
+              setShowFavOnly(e.target.value === "fav")
+            }
+          >
+            <option value="all">All Problems</option>
+            <option value="fav">Favorites</option>
+          </select> */}
         </div>
 
-        <h2>Problems ({problems.length})</h2>
+        <h2>
+          Problems ({displayedProblems.length})
+        </h2>
 
-        {problems.map((p) => (
+        {displayedProblems.map((p) => (
           <div
             key={p._id}
             style={{
