@@ -1,5 +1,5 @@
 const express = require("express");
-const fs = require("fs").promises; 
+const fs = require("fs").promises;
 const path = require("path");
 const os = require("os");
 const { spawn } = require("child_process");
@@ -57,9 +57,17 @@ router.post("/", auth, async (req, res) => {
             return res.json({ verdict: "Unsupported language" });
         }
 
-        const input = (testCases[0].input || "").trim();
-        const expectedOutput = (testCases[0].output || "").trim();
+        const input =
+            typeof testCases[0].input === "string"
+                ? testCases[0].input.trim()
+                : JSON.stringify(testCases[0].input);
 
+        const expectedOutput =
+            typeof testCases[0].output === "string"
+                ? testCases[0].output.trim()
+                : JSON.stringify(testCases[0].output);
+        // console.log("INPUT:", input);
+        // console.log("EXPECTED:", expectedOutput);
         const result = await runProgram(runCmd, runArgs, input, expectedOutput);
 
         await Submission.create({
@@ -104,7 +112,7 @@ function runProgram(cmd, args, input, expectedOutput) {
             clearTimeout(timer);
 
             if (stderr) return resolve({ verdict: "Runtime Error", error: stderr });
-            if (stdout.trim() === expectedOutput) return resolve({ verdict: "Passed" });
+            if (stdout.trim() === String(expectedOutput).trim()) return resolve({ verdict: "Passed" });
             return resolve({ verdict: "Failed", expected: expectedOutput, actual: stdout.trim() });
         });
     });
