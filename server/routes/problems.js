@@ -27,21 +27,48 @@ const Favourite = require("../models/Fav");
 
 router.get('/', async (req, res) => {
     try {
-        // console.log("problem api hitted");
-        const problems = await Problem.find();
-        res.json(problems);
+        const { difficulty, tag, search } = req.query;
 
+        const filter = {};
+
+        if (difficulty) {
+            filter.difficulty = difficulty;
+        }
+
+        if (tag) {
+            filter.tags = tag;
+        }
+
+        if (search) {
+            filter.title = {
+                $regex: search,
+                $options: "i"
+            };
+        }
+
+        const problems = await Problem.find(filter);
+
+        res.json(problems);
     } catch (err) {
-        res.status(500).json({ message: "Failed to fetch problems" });
+        res.status(500).json({
+            message: "Failed to fetch problems"
+        });
     }
 });
+
 router.get('/fav', auth, async (req, res) => {
     const userId = req.user.userId;
-    const favs = await Favourite.find({user:userId});
+    const favs = await Favourite.find({ user: userId });
     const favIds = favs.map(f => f.pid.toString());
 
     res.json(favIds);
-})
+});
+
+router.get("/tags/all", async (req, res) => {
+    const tags = await Problem.distinct("tags");
+    res.json(tags);
+});
+
 router.post('/fav/:pid', auth, async (req, res) => {
     const { pid } = req.params;
     const user = req.user.userId;

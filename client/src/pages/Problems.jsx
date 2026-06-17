@@ -1,145 +1,265 @@
-// const problems = [
-//   { id: 1, title: "Two Sum", difficulty: "Easy" },
-//   { id: 2, title: "Binary Search", difficulty: "Easy" },
-//   { id: 3, title: "Longest Substring", difficulty: "Medium" },
-//   { id: 4, title: "Merge Intervals", difficulty: "Medium" },
-//   { id: 5, title: "Word Ladder", difficulty: "Hard" },
-// ];
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import API_URL from "../config/api";
+
 function Problems() {
   const [problems, setProblems] = useState([]);
+  const [difficulty, setDifficulty] = useState("");
+  const [tag, setTag] = useState("");
   const [search, setSearch] = useState("");
+  const [tags, setTags] = useState([]);
+  const [fav, setFav] = useState([]);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [fav, setFav] = useState([]);
-  const { token } = useAuth();
+
   const [showLoginMsg, setShowLoginMsg] = useState(false);
+
+  const { token } = useAuth();
   const navigate = useNavigate();
-  const filteredProblems = problems.filter((p) =>
-    p.title.toLowerCase().includes(search.toLowerCase())
-  );
-  const addToFav = async (pid) => {
-    if (!token) {
-      setShowLoginMsg(true);
-      setTimeout(() => {
-        navigate("/auth/signin");
-        setShowLoginMsg(false);
-      }, 500);
-      return;
-    }
-    const res = await fetch(`${API_URL}/api/problems/fav/${pid}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+
+  useEffect(() => {
+    const fetchTags = async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/problems/tags/all`);
+        const data = await res.json();
+        setTags(data);
+      } catch (err) {
+        console.log(err);
       }
-    )
+    };
 
-    const data = await res.json();
+    fetchTags();
+  }, []);
 
-    if (data.message === "Added") {
-      setFav([...fav, pid]);
-    } else {
-      setFav(fav.filter((id) => id !== pid));
-    }
-
-  }
+  
   useEffect(() => {
     const fetchProblems = async () => {
       try {
-        const res = await fetch(`${API_URL}/api/problems`);
+        setLoading(true);
 
-        const data = await res.json();
-        if (!res.ok) {
-          throw new Error("Failed to fetch problems");
-        }
-        setProblems(data);
-      } catch (err) {
-        setError(err.message);
-      }
-      finally {
-        setLoading(false);
-      }
-    }
+        const params = new URLSearchParams();
 
-    const fetchFav = async () => {
-      try {
-        const res = await fetch(`${API_URL}/api/problems/fav`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            }
-          }
+        if (difficulty) params.append("difficulty", difficulty);
+        if (tag) params.append("tag", tag);
+        if (search) params.append("search", search);
+
+        const res = await fetch(
+          `${API_URL}/api/problems?${params.toString()}`
         );
 
         const data = await res.json();
+
         if (!res.ok) {
-          throw new Error("Failed to fetch problems");
+          throw new Error(data.message || "Failed to fetch problems");
         }
-        setFav(data || []);
+
+        setProblems(data);
       } catch (err) {
         setError(err.message);
-      }
-      finally {
+      } finally {
         setLoading(false);
       }
-    }
+    };
+
+    const fetchFav = async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/problems/fav`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!res.ok) return;
+
+        const data = await res.json();
+        setFav(data || []);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+
     fetchProblems();
+
     if (token) {
       fetchFav();
     }
-  }, []);
-  if (loading) return <h3>Loading Problems</h3>;
+  }, [difficulty, tag, search, token]);
+
+  const addToFav = async (pid) => {
+    if (!token) {
+      setShowLoginMsg(true);
+
+      setTimeout(() => {
+        setShowLoginMsg(false);
+        navigate("/auth/signin");
+      }, 800);
+
+      return;
+    }
+
+    try {
+      const res = await fetch(
+        `${API_URL}/api/problems/fav/${pid}`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const data = await res.json();
+
+      if (data.message === "Added") {
+        setFav((prev) => [...prev, pid]);
+      } else {
+        setFav((prev) =>
+          prev.filter((id) => id !== pid)
+        );
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  if (loading) return <h3>Loading Problems...</h3>;
+
   if (error) return <h3>Error: {error}</h3>;
+
   return (
     <>
       <div style={{ padding: "20px" }}>
-        <input
-          type="text"
-          placeholder="Search problems..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
+        {/* Filters */}
+        <div
           style={{
-            width: "100%",
-            padding: "10px",
+            display: "flex",
+            gap: "12px",
+            flexWrap: "wrap",
             marginBottom: "20px",
-            borderRadius: "8px",
-            border: "1px solid #ccc"
           }}
-        />
-        <h2>Problems</h2>
+        >
+          <input
+            type="text"
+            placeholder="Search problems..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            style={{
+              padding: "10px",
+              borderRadius: "8px",
+              border: "1px solid #ccc",
+              minWidth: "250px",
+            }}
+          />
 
-        <div>
-          {filteredProblems.map((p) => (
-            <div
-              key={p._id}
-              style={{
-                border: "1px solid #ddd",
-                borderRadius: "8px",
-                padding: "12px 16px",
-                marginBottom: "12px",
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center"
-              }}
-            >
+          <select
+            value={difficulty}
+            onChange={(e) => setDifficulty(e.target.value)}
+            style={{
+              padding: "10px",
+              borderRadius: "8px",
+            }}
+          >
+            <option value="">All Difficulty</option>
+            <option value="Easy">Easy</option>
+            <option value="Medium">Medium</option>
+            <option value="Hard">Hard</option>
+          </select>
+
+          <select
+            value={tag}
+            onChange={(e) => setTag(e.target.value)}
+            style={{
+              padding: "10px",
+              borderRadius: "8px",
+            }}
+          >
+            <option value="">All Tags</option>
+
+            {tags.map((t) => (
+              <option key={t} value={t}>
+                {t}
+              </option>
+            ))}
+          </select>
+
+          <button
+            onClick={() => {
+              setSearch("");
+              setDifficulty("");
+              setTag("");
+            }}
+            style={{
+              padding: "10px 16px",
+              borderRadius: "8px",
+              cursor: "pointer",
+            }}
+          >
+            Clear
+          </button>
+        </div>
+
+        <h2>Problems ({problems.length})</h2>
+
+        {problems.map((p) => (
+          <div
+            key={p._id}
+            style={{
+              border: "1px solid #ddd",
+              borderRadius: "8px",
+              padding: "14px",
+              marginBottom: "12px",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <div>
               <Link
                 to={`/problems/${p.slug}`}
                 style={{
                   textDecoration: "none",
                   fontWeight: "600",
                   fontSize: "18px",
-                  color: "#2563eb"
+                  color: "#2563eb",
                 }}
               >
                 {p.title}
               </Link>
 
+              {/* Tags */}
+              <div
+                style={{
+                  display: "flex",
+                  gap: "6px",
+                  flexWrap: "wrap",
+                  marginTop: "8px",
+                }}
+              >
+                {p.tags?.map((tag) => (
+                  <span
+                    key={tag}
+                    style={{
+                      padding: "3px 8px",
+                      background: "#f3f4f6",
+                      borderRadius: "6px",
+                      fontSize: "12px",
+                    }}
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+              }}
+            >
               <span
                 style={{
                   padding: "4px 10px",
@@ -151,22 +271,28 @@ function Problems() {
                       ? "#dcfce7"
                       : p.difficulty === "Medium"
                         ? "#fef3c7"
-                        : "#fee2e2"
+                        : "#fee2e2",
                 }}
               >
                 {p.difficulty}
               </span>
-              {/* 
-<button onClick={() => addToFav(p._id)}>
-  {fav.includes(p._id)
-    ? "Remove from favourites"
-    : "Add to Favourites"}
-</button>
-*/}
+
+              <button
+                onClick={() => addToFav(p._id)}
+                style={{
+                  border: "none",
+                  background: "transparent",
+                  cursor: "pointer",
+                  fontSize: "20px",
+                }}
+              >
+                {fav.includes(p._id) ? "⭐" : "☆"}
+              </button>
             </div>
-          ))}
-        </div>
+          </div>
+        ))}
       </div>
+
       {showLoginMsg && (
         <div className="login-popup">
           Please login first
@@ -174,6 +300,6 @@ function Problems() {
       )}
     </>
   );
-
 }
+
 export default Problems;
