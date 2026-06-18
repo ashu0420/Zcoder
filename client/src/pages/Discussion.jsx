@@ -9,12 +9,12 @@ function Discussion() {
     const [chat, setChat] = useState("");
     const [posts, setPosts] = useState([]);
     const navigate = useNavigate();
-    if (!problem) return <h2>Loading...</h2>;
     useEffect(() => {
         fetch(`${API_URL}/api/problems/${problem._id}/discussion`)
-            .then(res => res.json())
-            .then(setPosts);
+        .then(res => res.json())
+        .then(setPosts);
     }, [problem._id]);
+    if (!problem) return <h2>Loading...</h2>;
     const sendChat = async () => {
         if (!chat.trim()) return;
         if (!token) return navigate("/auth/signin");
