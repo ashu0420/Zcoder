@@ -27,13 +27,7 @@ function Contests() {
     (a, b) =>
       new Date(a.startTime) - new Date(b.startTime)
   );
-  const platformColors = {
-    "codeforces.com": "#f97316",
-    "codechef.com": "#92400e",
-    "leetcode.com": "#eab308",
-    "atcoder.jp": "#2563eb",
-    "hackerrank.com": "#16a34a"
-  };
+
   const filteredContests = sortedContests.filter(contest => {
     const matchesSearch =
       contest.name

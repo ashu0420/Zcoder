@@ -3,6 +3,11 @@ import Editor from "@monaco-editor/react";
 import { useAuth } from "../context/AuthContext";
 import API_URL from "../config/api";
 
+const starterCode = {
+    javascript: `const fs = require("fs");\nconst input = fs.readFileSync(0,"utf8");\nconsole.log(input);`,
+    cpp: `#include <bits/stdc++.h>\nusing namespace std;\nint main(){\n    return 0;\n}`,
+    python: `import sys\nprint(sys.stdin.read())`,
+};
 function CodeEditor({ testCases, problemId, slug }) {
     const [code, setCode] = useState("");
     const [language, setLanguage] = useState("cpp");
@@ -10,11 +15,6 @@ function CodeEditor({ testCases, problemId, slug }) {
     const { token } = useAuth();
     // const token = localStorage.getItem("token");
 
-    const starterCode = {
-        javascript: `const fs = require("fs");\nconst input = fs.readFileSync(0,"utf8");\nconsole.log(input);`,
-        cpp: `#include <bits/stdc++.h>\nusing namespace std;\nint main(){\n    return 0;\n}`,
-        python: `import sys\nprint(sys.stdin.read())`,
-    };
 
     useEffect(() => {
         setCode(starterCode[language]);
