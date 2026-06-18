@@ -1,81 +1,110 @@
 import { useEffect, useState } from "react";
 import { NavLink, Outlet, useParams } from "react-router-dom";
 import API_URL from "../config/api";
-
 import CodeEditor from "./CodeEditor";
 
 function Problem() {
     const { slug } = useParams();
     const [problem, setProblem] = useState(null);
-    const linkStyle = ({ isActive }) => ({
-        marginRight: "15px",
-        textDecoration: "none",
-        fontWeight: isActive ? "bold" : "normal",
-        color: isActive ? "blue" : "black",
-    });
 
     useEffect(() => {
         const fetchProblem = async () => {
             const res = await fetch(
                 `${API_URL}/api/problems/${slug}`
             );
+
             const data = await res.json();
             setProblem(data);
         };
 
         fetchProblem();
     }, [slug]);
-    // console.log(problem);
 
-    if (!problem) return <h2>Loading...</h2>;
+    if (!problem) {
+        return (
+            <div className="flex justify-center items-center h-screen">
+                <div className="text-xl font-semibold">
+                    Loading...
+                </div>
+            </div>
+        );
+    }
 
     return (
-        <div>
-            <div style={{ padding: "20px" }}>
-                <nav style={{ padding: "10px", borderBottom: "1px solid #ccc" }}>
-                    <NavLink to="" end style={linkStyle}>
+        <div className="h-[calc(100vh-64px)] flex flex-col bg-gray-50">
+            {/* Tabs */}
+            <div className="bg-white border-b px-6">
+                <nav className="flex gap-6">
+                    <NavLink
+                        to=""
+                        end
+                        className={({ isActive }) =>
+                            `py-4 border-b-2 font-medium transition ${isActive
+                                ? "border-blue-500 text-blue-600"
+                                : "border-transparent text-gray-500 hover:text-gray-700"
+                            }`
+                        }
+                    >
                         Description
                     </NavLink>
-                    <NavLink to="mySubmissions" style={linkStyle}>
+
+                    <NavLink
+                        to="mySubmissions"
+                        className={({ isActive }) =>
+                            `py-4 border-b-2 font-medium transition ${isActive
+                                ? "border-blue-500 text-blue-600"
+                                : "border-transparent text-gray-500 hover:text-gray-700"
+                            }`
+                        }
+                    >
                         My Submissions
                     </NavLink>
-                    <NavLink to="allSubmissions" style={linkStyle}>
+
+                    <NavLink
+                        to="allSubmissions"
+                        className={({ isActive }) =>
+                            `py-4 border-b-2 font-medium transition ${isActive
+                                ? "border-blue-500 text-blue-600"
+                                : "border-transparent text-gray-500 hover:text-gray-700"
+                            }`
+                        }
+                    >
                         All Submissions
                     </NavLink>
-                    <NavLink to="discussion" style={linkStyle}>
+
+                    <NavLink
+                        to="discussion"
+                        className={({ isActive }) =>
+                            `py-4 border-b-2 font-medium transition ${isActive
+                                ? "border-blue-500 text-blue-600"
+                                : "border-transparent text-gray-500 hover:text-gray-700"
+                            }`
+                        }
+                    >
                         Discussion
                     </NavLink>
-
                 </nav>
-                {/* {problem.title} */}
             </div>
-            <div
-                style={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr 1fr",
-                    gap: "20px",
-                    marginTop: "20px"
-                }}
-            >
-                <div>
+
+            {/* Main Layout */}
+            <div className="flex flex-1 overflow-hidden">
+                {/* Left Panel */}
+                <div className="w-1/2 overflow-y-auto border-r bg-white">
                     <Outlet context={{ problem }} />
                 </div>
 
-                <div style={{
-                    border: "1px solid #ddd",
-                    borderRadius: "10px",
-                    padding: "12px",
-                    backgroundColor: "#fff"
-                }}>
-                    <CodeEditor
-                        testCases={problem.testCases}
-                        problemId={problem._id}
-                        slug={slug}
-                    />
+                {/* Right Panel */}
+                <div className="w-1/2 bg-white p-3">
+                    <div className="h-full rounded-xl border shadow-sm overflow-hidden">
+                        <CodeEditor
+                            testCases={problem.testCases}
+                            problemId={problem._id}
+                            slug={slug}
+                        />
+                    </div>
                 </div>
             </div>
         </div>
-
     );
 }
 

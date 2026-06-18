@@ -34,16 +34,45 @@ function Signup() {
             setMessage("Something is wrong");
         }
     }
-    return <div>
+    return (
+        <div className="space-y-4">
+            <input
+                type="text"
+                placeholder="Username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className="w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
 
-        <input type="text" onChange={(e) => setUsername(e.target.value)} placeholder="Username" />
-        <br />
-        <input type="email" onChange={(e) => setEmail(e.target.value)} placeholder="Email" />
-        <br />
-        <input type="text" onChange={(e) => setPassword(e.target.value)} placeholder="Password" />
-        <br />
-        <button onClick={handleSignUp}>Sign Up</button>
-        {message && <p>{message}</p>}
-    </div>;
+            <input
+                type="email"
+                placeholder="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+
+            <input
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+
+            <button
+                onClick={handleSignUp}
+                className="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl font-medium"
+            >
+                Create Account
+            </button>
+
+            {message && (
+                <p className="text-center text-sm text-gray-600">
+                    {message}
+                </p>
+            )}
+        </div>
+      );
 }
 export default Signup;

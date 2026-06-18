@@ -40,54 +40,81 @@ function CodeEditor({ testCases, problemId, slug }) {
             // console.log
 
             const data = await res.json();
-            setOutput(data.verdict);
+            setOutput({
+                verdict: data.verdict,
+              });
         }
         else setOutput("Need Sign In");
     };
 
     return (
-        <div>
-            <div style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginBottom: "10px"
-            }}>
+        <div className="h-full flex flex-col bg-white">
+            {/* Top Bar */}
+            <div className="flex items-center justify-between p-3 border-b bg-gray-50">
+                <div className="flex items-center gap-3">
+                    <span className="text-sm font-semibold text-gray-600">
+                        Language
+                    </span>
 
-                <select value={language} onChange={(e) => setLanguage(e.target.value)}>
-                    <option value="cpp">C++</option>
-                    <option value="javascript">JavaScript</option>
-                    <option value="python">Python</option>
-                </select>
-            </div>
-            <br />
-            <Editor
-                height="70vh"
-                language={language === "cpp" ? "cpp" : language}
-                value={code}
-                theme="vs-dark"
-                onChange={(value) => setCode(value)}
-                options={{
-                    fontSize: 14,
-                    minimap: { enabled: false },
-                    automaticLayout: true,
-                }}
-            />
-            <br />
-            <div
-                style={{
-                    marginTop: "10px",
-                    display: "flex",
-                    justifyContent: "flex-end"
-                }}
-            >
-                <button onClick={runCode}>
+                    <select
+                        value={language}
+                        onChange={(e) => setLanguage(e.target.value)}
+                        className="px-3 py-2 border rounded-lg bg-white text-sm"
+                    >
+                        <option value="cpp">C++</option>
+                        <option value="javascript">JavaScript</option>
+                        <option value="python">Python</option>
+                    </select>
+                </div>
+
+                <button
+                    onClick={runCode}
+                    className="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-lg font-medium transition"
+                >
                     Submit
                 </button>
             </div>
-            {output && <pre>{output}</pre>}
+
+            {/* Editor */}
+            <div className="flex-1 overflow-hidden">
+                <Editor
+                    height="100%"
+                    language={language === "cpp" ? "cpp" : language}
+                    value={code}
+                    theme="vs-dark"
+                    onChange={(value) => setCode(value)}
+                    options={{
+                        fontSize: 15,
+                        minimap: { enabled: false },
+                        automaticLayout: true,
+                        scrollBeyondLastLine: false,
+                        padding: {
+                            top: 15,
+                        },
+                    }}
+                />
+            </div>
+
+            {/* Output Panel */}
+            {output && (
+                <div
+                    className={`border-t p-4 max-h-48 overflow-y-auto ${output.verdict === "Accepted"
+                            ? "bg-green-50"
+                            : "bg-red-50"
+                        }`}
+                >
+                    <div
+                        className={`font-bold ${output.verdict === "Accepted"
+                                ? "text-green-600"
+                                : "text-red-600"
+                            }`}
+                    >
+                        {output.verdict}
+                    </div>
+                </div>
+            )}
         </div>
-    );
+      );
 }
 
 export default CodeEditor;

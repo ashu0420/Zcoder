@@ -44,13 +44,37 @@ function Signin() {
 
         }
     }
-    return <div>
-        <input type="text" placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} />
-        <br />
-        <input type="text" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
-        <br />
-        <button onClick={handleSignin}>Sign In</button>
-        {message && <p> {message}</p>}
-    </div>;
+    return (
+        <div className="space-y-4">
+            <input
+                type="text"
+                placeholder="Username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className="w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+
+            <input
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+
+            <button
+                onClick={handleSignin}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-medium"
+            >
+                Sign In
+            </button>
+
+            {message && (
+                <p className="text-center text-sm text-gray-600">
+                    {message}
+                </p>
+            )}
+        </div>
+      );
 }
 export default Signin;

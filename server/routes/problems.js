@@ -58,10 +58,12 @@ router.get('/', async (req, res) => {
 
 router.get('/fav', auth, async (req, res) => {
     const userId = req.user.userId;
-    const favs = await Favourite.find({ user: userId });
-    const favIds = favs.map(f => f.pid.toString());
 
-    res.json(favIds);
+    const favs = await Favourite.find({
+        user: userId
+    }).populate("pid");
+
+    res.json(favs);
 });
 
 router.get("/tags/all", async (req, res) => {

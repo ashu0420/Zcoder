@@ -133,193 +133,140 @@ function Problems() {
 
   return (
     <>
-      <div style={{ padding: "20px" }}>
+      <div className="max-w-7xl mx-auto px-4 md:px-8 py-6">
         {/* Filters */}
-        <div
-          style={{
-            display: "flex",
-            gap: "12px",
-            flexWrap: "wrap",
-            marginBottom: "20px",
-          }}
-        >
-          <input
-            type="text"
-            placeholder="Search problems..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            style={{
-              padding: "10px",
-              borderRadius: "8px",
-              border: "1px solid #ccc",
-              minWidth: "250px",
-            }}
-          />
+        <div className="sticky top-16 z-10 bg-white border rounded-xl p-4 shadow-sm mb-6">
+          <div className="flex flex-wrap gap-3">
+            <input
+              type="text"
+              placeholder="Search problems..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="flex-1 min-w-[250px] px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
 
-          <select
-            value={difficulty}
-            onChange={(e) => setDifficulty(e.target.value)}
-            style={{
-              padding: "10px",
-              borderRadius: "8px",
-            }}
-          >
-            <option value="">All Difficulty</option>
-            <option value="Easy">Easy</option>
-            <option value="Medium">Medium</option>
-            <option value="Hard">Hard</option>
-          </select>
+            <select
+              value={difficulty}
+              onChange={(e) => setDifficulty(e.target.value)}
+              className="px-4 py-2 border rounded-lg bg-white"
+            >
+              <option value="">All Difficulty</option>
+              <option value="Easy">Easy</option>
+              <option value="Medium">Medium</option>
+              <option value="Hard">Hard</option>
+            </select>
 
-          <select
-            value={tag}
-            onChange={(e) => setTag(e.target.value)}
-            style={{
-              padding: "10px",
-              borderRadius: "8px",
-            }}
-          >
-            <option value="">All Tags</option>
+            <select
+              value={tag}
+              onChange={(e) => setTag(e.target.value)}
+              className="px-4 py-2 border rounded-lg bg-white"
+            >
+              <option value="">All Tags</option>
 
-            {tags.map((t) => (
-              <option key={t} value={t}>
-                {t}
-              </option>
-            ))}
-          </select>
+              {tags.map((t) => (
+                <option key={t} value={t}>
+                  {t}
+                </option>
+              ))}
+            </select>
 
-          <button
-            onClick={() => {
-              setSearch("");
-              setDifficulty("");
-              setTag("");
-            }}
-            style={{
-              padding: "10px 16px",
-              borderRadius: "8px",
-              cursor: "pointer",
-            }}
-          >
-            Clear
-          </button>
-          <button
-            onClick={() => setShowFavOnly(!showFavOnly)}
-            style={{
-              padding: "10px 16px",
-              borderRadius: "8px",
-              cursor: "pointer",
-              backgroundColor: showFavOnly ? "#facc15" : "#f3f4f6"
-            }}
-          >
-            {showFavOnly ? "⭐ Favorites" : "☆ Favorites"}
-          </button>
-          {/* <select
-            value={showFavOnly ? "fav" : "all"}
-            onChange={(e) =>
-              setShowFavOnly(e.target.value === "fav")
-            }
-          >
-            <option value="all">All Problems</option>
-            <option value="fav">Favorites</option>
-          </select> */}
+            <button
+              onClick={() => {
+                setSearch("");
+                setDifficulty("");
+                setTag("");
+              }}
+              className="px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition"
+            >
+              Clear
+            </button>
+
+            <button
+              onClick={() => setShowFavOnly(!showFavOnly)}
+              className={`px-4 py-2 rounded-lg transition font-medium ${showFavOnly
+                  ? "bg-yellow-400 text-black"
+                  : "bg-gray-100 hover:bg-gray-200"
+                }`}
+            >
+              {showFavOnly ? "⭐ Favorites" : "☆ Favorites"}
+            </button>
+          </div>
         </div>
 
-        <h2>
-          Problems ({displayedProblems.length})
-        </h2>
+        {/* Heading */}
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="text-2xl font-bold">
+            Problems
+          </h2>
 
-        {displayedProblems.map((p) => (
-          <div
-            key={p._id}
-            style={{
-              border: "1px solid #ddd",
-              borderRadius: "8px",
-              padding: "14px",
-              marginBottom: "12px",
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
-            <div>
-              <Link
-                to={`/problems/${p.slug}`}
-                style={{
-                  textDecoration: "none",
-                  fontWeight: "600",
-                  fontSize: "18px",
-                  color: "#2563eb",
-                }}
-              >
-                {p.title}
-              </Link>
+          <span className="px-3 py-1 rounded-full bg-blue-100 text-blue-700 font-medium">
+            {displayedProblems.length} Problems
+          </span>
+        </div>
 
-              {/* Tags */}
-              <div
-                style={{
-                  display: "flex",
-                  gap: "6px",
-                  flexWrap: "wrap",
-                  marginTop: "8px",
-                }}
-              >
-                {p.tags?.map((tag) => (
-                  <span
-                    key={tag}
-                    style={{
-                      padding: "3px 8px",
-                      background: "#f3f4f6",
-                      borderRadius: "6px",
-                      fontSize: "12px",
-                    }}
+        {/* Problem List */}
+        <div className="space-y-4">
+          {displayedProblems.map((p) => (
+            <div
+              key={p._id}
+              className="bg-white border rounded-xl p-5 hover:shadow-md transition duration-200"
+            >
+              <div className="flex justify-between items-start gap-4">
+                {/* Left */}
+                <div className="flex-1">
+                  <Link
+                    to={`/problems/${p.slug}`}
+                    className="text-lg md:text-xl font-semibold text-blue-600 hover:text-blue-800"
                   >
-                    {tag}
+                    {p.title}
+                  </Link>
+
+                  <div className="flex flex-wrap gap-2 mt-3">
+                    {p.tags?.map((tag) => (
+                      <span
+                        key={tag}
+                        className="px-2 py-1 text-xs rounded-md bg-gray-100 text-gray-700"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Right */}
+                <div className="flex items-center gap-3">
+                  <span
+                    className={`px-3 py-1 rounded-lg text-sm font-semibold ${p.difficulty === "Easy"
+                        ? "bg-green-100 text-green-700"
+                        : p.difficulty === "Medium"
+                          ? "bg-yellow-100 text-yellow-700"
+                          : "bg-red-100 text-red-700"
+                      }`}
+                  >
+                    {p.difficulty}
                   </span>
-                ))}
+
+                  <button
+                    onClick={() => addToFav(p._id)}
+                    className="text-2xl hover:scale-110 transition"
+                  >
+                    {fav.includes(p._id) ? "⭐" : "☆"}
+                  </button>
+                </div>
               </div>
             </div>
+          ))}
+        </div>
 
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "10px",
-              }}
-            >
-              <span
-                style={{
-                  padding: "4px 10px",
-                  borderRadius: "6px",
-                  fontSize: "14px",
-                  fontWeight: "500",
-                  backgroundColor:
-                    p.difficulty === "Easy"
-                      ? "#dcfce7"
-                      : p.difficulty === "Medium"
-                        ? "#fef3c7"
-                        : "#fee2e2",
-                }}
-              >
-                {p.difficulty}
-              </span>
-
-              <button
-                onClick={() => addToFav(p._id)}
-                style={{
-                  border: "none",
-                  background: "transparent",
-                  cursor: "pointer",
-                  fontSize: "20px",
-                }}
-              >
-                {fav.includes(p._id) ? "⭐" : "☆"}
-              </button>
-            </div>
+        {displayedProblems.length === 0 && (
+          <div className="text-center py-16 text-gray-500">
+            No problems found.
           </div>
-        ))}
+        )}
       </div>
 
       {showLoginMsg && (
-        <div className="login-popup">
+        <div className="fixed bottom-6 right-6 bg-black text-white px-4 py-3 rounded-lg shadow-lg">
           Please login first
         </div>
       )}
