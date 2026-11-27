@@ -1,129 +1,92 @@
 const express = require("express");
-const fs = require("fs").promises;
-const path = require("path");
-const os = require("os");
-const { spawn } = require("child_process");
 const Submission = require("../models/Submission");
 const auth = require("../middleware/auth");
+const { runInDocker } = require("../services/dockerExecutor");
 
 const router = express.Router();
 
-router.post("/", auth, async (req, res) => {
-    let filePath = "";
-    let binaryPath = "";
+const SUPPORTED_LANGUAGES = new Set(["javascript", "python", "cpp"]);
+const EXECUTION_TIMEOUT_MS = 2000;
 
+function normalizeValue(val) {
+    if (val === undefined || val === null) return "";
+    return typeof val === "string" ? val.trim() : JSON.stringify(val);
+}
+
+router.post("/", auth, async (req, res) => {
     try {
         const { language, code, testCases, problemId, slug } = req.body;
 
-
-        if (!language || !code) return res.json({ verdict: "Language and code are required" });
-        if (!Array.isArray(testCases) || testCases.length === 0) return res.json({ verdict: "No test case provided" });
-
-        const base = `code-${Date.now()}`;
-        const tmp = os.tmpdir();
-        let runCmd, runArgs = [];
-
-
-        if (language === "javascript") {
-            filePath = path.join(tmp, `${base}.js`);
-            await fs.writeFile(filePath, code);
-            runCmd = "node";
-            runArgs = [filePath];
+        if (!language || typeof code !== "string" || !code.trim()) {
+            return res.status(400).json({ verdict: "Language and code are required" });
         }
-        else if (language === "python") {
-            filePath = path.join(tmp, `${base}.py`);
-            await fs.writeFile(filePath, code);
-            runCmd = "python3";
-            runArgs = [filePath];
+        if (!SUPPORTED_LANGUAGES.has(language)) {
+            return res.status(400).json({ verdict: "Unsupported language" });
         }
-        else if (language === "cpp") {
-            filePath = path.join(tmp, `${base}.cpp`);
-            binaryPath = path.join(tmp, `${base}.out`);
-            await fs.writeFile(filePath, code);
+        if (!Array.isArray(testCases) || testCases.length === 0) {
+            return res.status(400).json({ verdict: "No test case provided" });
+        }
 
+        let finalResult = { verdict: "Passed" };
 
-            const compile = spawn("g++", [filePath, "-o", binaryPath]);
-            let compileErr = "";
-            compile.stderr.on("data", d => compileErr += d.toString());
+        for (let i = 0; i < testCases.length; i++) {
+            const input = normalizeValue(testCases[i].input);
+            const expectedOutput = normalizeValue(testCases[i].output);
 
-            const exitCode = await new Promise((resolve) => compile.on("close", resolve));
-            if (exitCode !== 0) {
-                await cleanup(filePath, binaryPath);
-                return res.json({ verdict: "Compile Error", error: compileErr });
+            const execRes = await runInDocker({
+                language,
+                code,
+                input: input ? `${input}\n` : "",
+                timeoutMs: EXECUTION_TIMEOUT_MS,
+            });
+
+            if (execRes.timedOut) {
+                finalResult = { verdict: "Time Limit Exceeded", failedCase: i + 1 };
+                break;
             }
-            runCmd = binaryPath;
+            if (language === "cpp" && execRes.exitCode === 2) {
+                finalResult = {
+                    verdict: "Compile Error",
+                    error: execRes.stderr.trim() || "Compilation failed",
+                };
+                break;
+            }
+            if (execRes.exitCode !== 0) {
+                finalResult = {
+                    verdict: "Runtime Error",
+                    failedCase: i + 1,
+                    error: execRes.stderr.trim() || `Process exited with code ${execRes.exitCode}`,
+                };
+                break;
+            }
+
+            const actualOutput = execRes.stdout.trim();
+            if (actualOutput !== expectedOutput) {
+                finalResult = {
+                    verdict: "Failed",
+                    failedCase: i + 1,
+                    expected: expectedOutput,
+                    actual: actualOutput,
+                };
+                break;
+            }
         }
-        else {
-            return res.json({ verdict: "Unsupported language" });
+
+        if (req.user?.userId) {
+            await Submission.create({
+                user: req.user.userId,
+                problem: problemId,
+                slug,
+                language,
+                code,
+                verdict: finalResult.verdict,
+            });
         }
 
-        const input =
-            typeof testCases[0].input === "string"
-                ? testCases[0].input.trim()
-                : JSON.stringify(testCases[0].input);
-
-        const expectedOutput =
-            typeof testCases[0].output === "string"
-                ? testCases[0].output.trim()
-                : JSON.stringify(testCases[0].output);
-        // console.log("INPUT:", input);
-        // console.log("EXPECTED:", expectedOutput);
-        const result = await runProgram(runCmd, runArgs, input, expectedOutput);
-
-        await Submission.create({
-            user: req.user.userId,
-            problem: problemId,
-            slug,
-            language,
-            code,
-            verdict: result.verdict,
-        });
-
-        await cleanup(filePath, binaryPath);
-        return res.json(result);
-
+        return res.json(finalResult);
     } catch (err) {
-        await cleanup(filePath, binaryPath);
-        res.json({ verdict: "Server error", error: err.message });
+        return res.status(500).json({ verdict: "Server error", error: err.message });
     }
 });
-
-function runProgram(cmd, args, input, expectedOutput) {
-    return new Promise((resolve) => {
-        const child = spawn(cmd, args);
-        let stdout = "", stderr = "", finished = false;
-
-        const timer = setTimeout(() => {
-            if (!finished) {
-                finished = true;
-                child.kill("SIGKILL");
-                resolve({ verdict: "Time Limit Exceeded" });
-            }
-        }, 2000);
-
-        child.stdout.on("data", d => stdout += d.toString());
-        child.stderr.on("data", d => stderr += d.toString());
-        if (input) child.stdin.write(input + "\n");
-        child.stdin.end();
-
-        child.on("close", () => {
-            if (finished) return;
-            finished = true;
-            clearTimeout(timer);
-
-            if (stderr) return resolve({ verdict: "Runtime Error", error: stderr });
-            if (stdout.trim() === String(expectedOutput).trim()) return resolve({ verdict: "Passed" });
-            return resolve({ verdict: "Failed", expected: expectedOutput, actual: stdout.trim() });
-        });
-    });
-}
-
-
-async function cleanup(f1, f2) {
-    try {
-        if (f1) await fs.unlink(f1);
-        if (f2) await fs.unlink(f2);
-    } catch (e) { /* ignore cleanup errors */ }
-}
 
 module.exports = router;
